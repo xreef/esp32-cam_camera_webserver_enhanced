@@ -17,6 +17,8 @@
 #include "img_converters.h"
 #include "camera_index.h"
 #include "Arduino.h"
+#include <esp_int_wdt.h>
+#include <esp_task_wdt.h>
 
 #include "fb_gfx.h"
 #include "fd_forward.h"
@@ -58,10 +60,11 @@ httpd_handle_t camera_httpd = NULL;
 
 static mtmn_config_t mtmn_config = {0};
 static int8_t detection_enabled = 0;
-static int8_t flash_enabled = 0;
 static int8_t recognition_enabled = 0;
 static int8_t is_enrolling = 0;
 static face_id_list id_list = {0};
+
+static int8_t flash_enabled = 0;
 
 static ra_filter_t * ra_filter_init(ra_filter_t * filter, size_t sample_size){
     memset(filter, 0, sizeof(ra_filter_t));
@@ -538,6 +541,19 @@ static esp_err_t cmd_handler(httpd_req_t *req){
          digitalWrite(4, atoi(value));
          flash_enabled = atoi(value);
      }
+    else if(!strcmp(variable, "reboot")) {
+        esp_task_wdt_init(3,true);  // schedule a a watchdog panic event for 3 seconds in the future
+        esp_task_wdt_add(NULL);
+        periph_module_disable(PERIPH_I2C0_MODULE); // try to shut I2C down properly
+        periph_module_disable(PERIPH_I2C1_MODULE);
+        periph_module_reset(PERIPH_I2C0_MODULE);
+        periph_module_reset(PERIPH_I2C1_MODULE);
+        Serial.print("REBOOT requested");
+        while(true) {
+          delay(150);
+          Serial.print('.');
+        }
+    }
     else {
         res = -1;
     }
@@ -606,6 +622,21 @@ static esp_err_t index_handler(httpd_req_t *req){
     return httpd_resp_send(req, (const char *)index_ov2640_html_gz, index_ov2640_html_gz_len);
 }
 
+static esp_err_t reboot_handler(httpd_req_t *req){
+	esp_task_wdt_init(3,true);  // schedule a a watchdog panic event for 3 seconds in the future
+	esp_task_wdt_add(NULL);
+	periph_module_disable(PERIPH_I2C0_MODULE); // try to shut I2C down properly
+	periph_module_disable(PERIPH_I2C1_MODULE);
+	periph_module_reset(PERIPH_I2C0_MODULE);
+	periph_module_reset(PERIPH_I2C1_MODULE);
+	Serial.print("REBOOT requested");
+	while(true) {
+	  delay(150);
+	  Serial.print('.');
+	}
+	return httpd_resp_send(req, "Reboot!", 7);
+}
+
 
 void startCameraServer(){
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -638,12 +669,19 @@ void startCameraServer(){
         .user_ctx  = NULL
     };
 
-   httpd_uri_t stream_uri = {
-        .uri       = "/stream",
-        .method    = HTTP_GET,
-        .handler   = stream_handler,
-        .user_ctx  = NULL
-    };
+    httpd_uri_t stream_uri = {
+         .uri       = "/stream",
+         .method    = HTTP_GET,
+         .handler   = stream_handler,
+         .user_ctx  = NULL
+     };
+
+    httpd_uri_t reboot_uri = {
+         .uri       = "/reboot",
+         .method    = HTTP_GET,
+         .handler   = reboot_handler,
+         .user_ctx  = NULL
+     };
 
 
     ra_filter_init(&ra_filter, 20);
@@ -670,6 +708,7 @@ void startCameraServer(){
         httpd_register_uri_handler(camera_httpd, &cmd_uri);
         httpd_register_uri_handler(camera_httpd, &status_uri);
         httpd_register_uri_handler(camera_httpd, &capture_uri);
+        httpd_register_uri_handler(camera_httpd, &reboot_uri);
     }
 
     config.server_port += 1;
@@ -678,4 +717,5 @@ void startCameraServer(){
     if (httpd_start(&stream_httpd, &config) == ESP_OK) {
         httpd_register_uri_handler(stream_httpd, &stream_uri);
     }
+
 }

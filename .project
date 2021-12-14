@@ -42,9 +42,34 @@
 			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/esp32/hardware/esp32/1.0.6/variants/esp32</locationURI>
 		</link>
 		<link>
+			<name>libraries/DNSServer</name>
+			<type>2</type>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/esp32/hardware/esp32/1.0.6/libraries/DNSServer</locationURI>
+		</link>
+		<link>
+			<name>libraries/FS</name>
+			<type>2</type>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/esp32/hardware/esp32/1.0.6/libraries/FS</locationURI>
+		</link>
+		<link>
+			<name>libraries/Update</name>
+			<type>2</type>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/esp32/hardware/esp32/1.0.6/libraries/Update</locationURI>
+		</link>
+		<link>
+			<name>libraries/WebServer</name>
+			<type>2</type>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/esp32/hardware/esp32/1.0.6/libraries/WebServer</locationURI>
+		</link>
+		<link>
 			<name>libraries/WiFi</name>
 			<type>2</type>
 			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/esp32/hardware/esp32/1.0.6/libraries/WiFi</locationURI>
+		</link>
+		<link>
+			<name>libraries/WiFiManager</name>
+			<type>2</type>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/WiFiManager/2.0.5-beta</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>
