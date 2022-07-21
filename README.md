@@ -1,4 +1,7 @@
 ## esp32-cam firmware to use with BeePrint
+
+You must use 1.0.6 ESP32 framework.
+
 Some additional config
  - you can set wifi manager at startutp to insert wifi intercatly: #define WIFI_MANAGER
  - you can set multiple wifi setting 
